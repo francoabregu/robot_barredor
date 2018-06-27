@@ -133,7 +133,28 @@ int medir(){
     digitalWrite(trigPin, LOW);
     duracion = pulseIn(echoPin, HIGH);
     int distancia= duracion*0.034/2;
-    Serial.print("Distance: ");
+    //Serial.print("Distance: ");
     Serial.println(distancia);
     return distancia;
+}
+
+int medirFrente(){
+       myservo.write(90);
+       Serial.print ("Distancia Frente: "); // Output distance (unit: cm)
+       int distancia = medir();       
+       return distancia;
+}
+
+int medirIzquierda(){
+       myservo.write(5);
+       Serial.print ("Distancia Izquierda: "); // Output distance (unit: cm)
+       int distancia = medir();       
+       return distancia;
+}
+
+int medirDerecha(){
+       myservo.write(5);
+       Serial.print ("Distancia Derecha: "); // Output distance (unit: cm)
+       int distancia = medir();       
+       return distancia;
 }
