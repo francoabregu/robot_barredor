@@ -9,7 +9,6 @@ const int pinIN4 = 12;
 const int pinENB = 7;
 const int pinMotorIzquierda[3] = { pinENA, pinIN1, pinIN2 }; // el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
 const int pinMotorDerecha[3] = { pinENB, pinIN3, pinIN4 };// el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
-const int waitTime = 1000;   //espera entre fases
 const int speed = 200;      //velocidad de giro
 
 // Sensor ultrasónico
@@ -17,8 +16,15 @@ int distance;
 const int trigPin = 3;
 const int echoPin = 2;
 
-Servo myservo; // set myservo
+// Servo
+Servo myservo;
+const int waitTime = 250;
 
+// Direcciones
+const int adelante = 8;
+const int derecha = 6;
+const int izquierda = 4;
+const int atras = 2;
 
 void setup()
 {
@@ -36,12 +42,31 @@ void setup()
  
 void loop()
 {
-  avanzar(10);
-  distance = medir();
-    if(distance < 6){
-      detenerse(10);
-    }
-    avanzar(10);
+  myservo.write(90); // Pongo el servo mirando para el frente
+  int proximaDireccion = obtenerDireccion();
+  switch(proximaDireccion){
+  case atras: retroceder(8);
+              girarALaIzquierda(2);
+              Serial.print("Retroceder");
+              break;
+  case derecha: retroceder(1);
+                girarALaDerecha(6);
+                Serial.print("Derecha");
+                break;
+  case izquierda: retroceder(1);
+                  girarALaIzquierda(6);
+                  Serial.print ("Izquierda");
+                  break;
+  case adelante: avanzar(1);
+                 Serial.print("Avanzar");
+                 break;
+  default:  Serial.print("La dirección ");
+            Serial.print(proximaDireccion);
+            Serial.print(" no es válida");
+            break;
+
+  }
+  
 }
  
 void moveForward(const int pinMotor[3]){
@@ -81,7 +106,7 @@ void retroceder(int valor){
 }
 
 // girar a la derecha con una sola rueda suponiendo que motor B es el de la derecha y motor A el de la izquierda
-void derecha(int valor){
+void derechaUnaRueda(int valor){
       digitalWrite(pinMotorDerecha[2], LOW);
       digitalWrite(pinMotorDerecha[1], HIGH);
       digitalWrite(pinMotorIzquierda[2], HIGH);
@@ -91,7 +116,7 @@ void derecha(int valor){
       delay(valor * 100);
      }
 // girar a la izquierda con una sola rueda suponiendo que motor B es el de la derecha y motor A el de la izquierda
-void izquierda(int valor){
+void izquierdaUnaRueda(int valor){
       digitalWrite(pinMotorDerecha[2], HIGH);
       digitalWrite(pinMotorDerecha[1], HIGH);
       digitalWrite(pinMotorIzquierda[2], LOW); // cause the motor(left rear) to operate
@@ -158,3 +183,35 @@ int medirDerecha(){
        int distancia = medir();       
        return distancia;
 }
+
+int obtenerDireccion(){
+       int direccion, distanciaIzquierda, distanciaDerecha, distanciaFrente = 0;
+       int delay_time = 250; // tiempo para que arranque el servo
+       distanciaFrente = medirFrente();
+       if(distanciaFrente <10){
+        detenerse(1);
+        retroceder(2);
+       }   
+       if(distanciaFrente <25){
+         detenerse(1);
+         distanciaIzquierda = medirIzquierda();
+         delay(delay_time);
+         distanciaDerecha = medirDerecha();
+         delay(delay_time);        
+         if(distanciaIzquierda > distanciaDerecha){
+          direccion = derecha;
+         }
+         else{
+          direccion = izquierda; // go left
+         }        
+         if(distanciaIzquierda <10 && distanciaDerecha <10){
+          direccion = atras;
+         }
+       }
+       else{
+         direccion = adelante; // move forward
+       }
+       return direccion;
+}
+
+
