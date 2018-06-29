@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <IRremote.h>
 
 // Motores
 const int pinENA = 6;
@@ -19,6 +20,7 @@ const int echoPin = 2;
 // Servo
 Servo myservo;
 const int waitTime = 250;
+const int pinServo = 5;
 
 // Direcciones
 const int adelante = 8;
@@ -26,9 +28,14 @@ const int derecha = 6;
 const int izquierda = 4;
 const int atras = 2;
 
+// Control Remoto
+const int RECV_PIN = 9;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
 void setup()
 {
-   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+   pinMode(trigPin, OUTPUT);
    pinMode(echoPin, INPUT);
    pinMode(pinIN1, OUTPUT);
    pinMode(pinIN2, OUTPUT);
@@ -37,11 +44,13 @@ void setup()
    pinMode(pinIN4, OUTPUT);
    pinMode(pinENB, OUTPUT);
    Serial.begin(9600);
-   myservo.attach (5); // Define the servo motor output pin 5 (PWM)
+   myservo.attach(pinServo); // Define the servo motor output pin 5 (PWM)
+   irrecv.enableIRIn();
 }
  
 void loop()
 {
+  mostrarTelca();
   myservo.write(90); // Pongo el servo mirando para el frente
   int proximaDireccion = obtenerDireccion();
   switch(proximaDireccion){
@@ -214,4 +223,10 @@ int obtenerDireccion(){
        return direccion;
 }
 
+void mostrarTelca(){
+  if (irrecv.decode(&results)){
+      Serial.println(results.value, HEX); //imprime el valor en hexa
+      irrecv.resume();
+  }
+}
 
