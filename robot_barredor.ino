@@ -47,35 +47,13 @@ void setup()
    myservo.attach(pinServo); // Define the servo motor output pin 5 (PWM)
    irrecv.enableIRIn();
 }
- 
-void loop()
-{
-  mostrarTelca();
-  myservo.write(90); // Pongo el servo mirando para el frente
-  int proximaDireccion = obtenerDireccion();
-  switch(proximaDireccion){
-  case atras: retroceder(8);
-              girarALaIzquierda(2);
-              Serial.print("Retroceder");
-              break;
-  case derecha: retroceder(1);
-                girarALaDerecha(6);
-                Serial.print("Derecha");
-                break;
-  case izquierda: retroceder(1);
-                  girarALaIzquierda(6);
-                  Serial.print ("Izquierda");
-                  break;
-  case adelante: avanzar(1);
-                 Serial.print("Avanzar");
-                 break;
-  default:  Serial.print("La dirección ");
-            Serial.print(proximaDireccion);
-            Serial.print(" no es válida");
-            break;
 
-  }
-  
+
+void loop(){
+  myservo.write(90); // Pongo el servo mirando para el frente
+  //leerTecla(); // manejar desde el tecladito
+  //leerEntrada(); // manejar desde conexión serial
+  moverse(); //se mueve de forma automática  
 }
  
 void moveForward(const int pinMotor[3]){
@@ -174,6 +152,7 @@ int medir(){
 
 int medirFrente(){
        myservo.write(90);
+       delay(waitTime);
        Serial.print ("Distancia Frente: "); // Output distance (unit: cm)
        int distancia = medir();       
        return distancia;
@@ -181,13 +160,15 @@ int medirFrente(){
 
 int medirIzquierda(){
        myservo.write(5);
+       delay(waitTime);
        Serial.print ("Distancia Izquierda: "); // Output distance (unit: cm)
        int distancia = medir();       
        return distancia;
 }
 
 int medirDerecha(){
-       myservo.write(5);
+       myservo.write(117);
+       delay(waitTime);
        Serial.print ("Distancia Derecha: "); // Output distance (unit: cm)
        int distancia = medir();       
        return distancia;
@@ -211,22 +192,82 @@ int obtenerDireccion(){
           direccion = derecha;
          }
          else{
-          direccion = izquierda; // go left
+          direccion = izquierda;
          }        
          if(distanciaIzquierda <10 && distanciaDerecha <10){
           direccion = atras;
          }
        }
        else{
-         direccion = adelante; // move forward
+         direccion = adelante;
        }
        return direccion;
 }
 
-void mostrarTelca(){
+void leerTecla(){
   if (irrecv.decode(&results)){
       Serial.println(results.value, HEX); //imprime el valor en hexa
       irrecv.resume();
+  }
+}
+
+void leerEntrada(){
+   if (Serial.available()>0){ // si se ingreso algo por teclado en el monitor serie
+     String opcion = Serial.readStringUntil('\n');
+     if(opcion == "medir"){
+      Serial.print("Medir distancia \n");
+      medir();
+     }     
+     if(opcion == "servo"){
+      Serial.print("Girar servo \n");
+      myservo.write(117);
+      delay(waitTime);
+      myservo.write(117);
+      delay(waitTime);
+      myservo.write(90);
+     }
+     if(opcion == "avanzar"){
+      Serial.print("Avanzar\n");
+      avanzar(3);
+     }
+     if(opcion == "izquierda"){
+      Serial.print("Girar a la derecha\n");
+      girarALaIzquierda(6);
+     }
+     if(opcion == "derecha"){
+      Serial.print("Girar a la derecha\n");
+      girarALaDerecha(6);
+     }
+     if(opcion == "retroceder"){
+      Serial.print("Retroceder\n");
+      retroceder(3);
+     }    
+  }
+}
+
+void moverse(){
+  int proximaDireccion = obtenerDireccion();
+  switch(proximaDireccion){
+  case atras: retroceder(8);
+              girarALaIzquierda(2);
+              Serial.print("Retroceder");
+              break;
+  case derecha: retroceder(1);
+                girarALaDerecha(6);
+                Serial.print("Derecha");
+                break;
+  case izquierda: retroceder(1);
+                  girarALaIzquierda(6);
+                  Serial.print ("Izquierda");
+                  break;
+  case adelante: avanzar(1);
+                 Serial.print("Avanzar");
+                 break;
+  default:  Serial.print("La dirección ");
+            Serial.print(proximaDireccion);
+            Serial.print(" no es válida");
+            break;
+
   }
 }
 
