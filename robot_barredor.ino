@@ -92,7 +92,7 @@ void detenerse(int valor){
   imprimirEnLCD("Movimiento:","Detenerse");
   fullStop(pinMotorDerecha);
   fullStop(pinMotorIzquierda);
-  delay(valor * 10);
+  delay(valor * 100);
 }
 
 void retroceder(int valor){
@@ -294,17 +294,6 @@ void leerEntrada(){
       medirIzquierda();
       myservo.write(90);
      }     
-     if(opcion == "servo"){
-      Serial.print("Girar servo \n");
-      delay(waitTime);
-      myservo.write(200);
-      delay(waitTime);
-      myservo.write(90);
-      delay(waitTime);
-      myservo.write(60);
-      delay(waitTime);
-      //myservo.write(90);
-     }
      if(opcion == "avanzar"){
       Serial.print("Avanzar\n");
       avanzar(3);
