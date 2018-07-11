@@ -11,7 +11,7 @@ const int pinIN4 = 11;
 const int pinENB = 7;
 const int pinMotorDerecha[3] = { pinENA, pinIN1, pinIN2 }; // el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
 const int pinMotorIzquierda[3] = { pinENB, pinIN3, pinIN4 };// el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
-const int speed = 200;      //velocidad de giro
+const int speed = 130;      //velocidad de giro
 
 // Sensor ultrasónico
 int distance;
@@ -59,7 +59,7 @@ void setup()
 void loop(){
   myservo.write(90); // Pongo el servo mirando para el frente
   leerTecla(); // manejar desde conexión serial  
-  leerEntrada();
+  //leerEntrada();
   //moverse(); //se mueve de forma automática        
 }
  
@@ -129,7 +129,7 @@ void girarALaDerecha(int valor){
       digitalWrite(pinMotorIzquierda[2], LOW); // cause the motor (right rear) to operate
       digitalWrite(pinMotorIzquierda[1], HIGH);
       digitalWrite(pinMotorDerecha[2], HIGH);
-      digitalWrite(pinMotorIzquierda[1], LOW); // cause the motor (left front) to operate
+      digitalWrite(pinMotorDerecha[1], LOW); // cause the motor (left front) to operate
       analogWrite(pinMotorDerecha[0],speed);
       analogWrite(pinMotorIzquierda[0], speed);
       delay(valor * 100);
@@ -229,12 +229,12 @@ void leerTecla(){
       case 0x00FF629D:  avanzar(2);
                         Serial.println("Tecla: Arriba"); 
                         break;
-      case 0x00FF22DD: girarALaIzquierda(2);
+      case 0x00FF22DD: girarALaIzquierda(1);
                        Serial.println("Tecla: Izquierda");    
                        break;
       case 0x00FF02FD: Serial.println("Tecla: OK");    
                        break;
-      case 0x00FFC23D: girarALaDerecha(2);
+      case 0x00FFC23D: girarALaDerecha(1);
                        Serial.println("Tecla: Derecha");   
                        break;
       case 0x00FFA857: retroceder(2);
@@ -296,7 +296,7 @@ void leerEntrada(){
      }     
      if(opcion == "avanzar"){
       Serial.print("Avanzar\n");
-      avanzar(3);
+      avanzar(2);
      }
      if(opcion == "izquierda"){
       Serial.print("Girar a la derecha\n");
@@ -311,9 +311,9 @@ void leerEntrada(){
       retroceder(3);
      }
      if(opcion == "parar"){
-      Serial.print("Retroceder\n");
-      detenerse(1);
-     }    moveForward(pinMotorIzquierda);
+      Serial.print("Parar\n");
+      detenerse(2);
+     }   
   }
 }
 
