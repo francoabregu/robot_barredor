@@ -4,11 +4,11 @@
 
 // Motores
 const int pinENA = 6;
-const int pinIN1 = 8;
-const int pinIN2 = 9;
-const int pinIN3 = 10;
-const int pinIN4 = 11;
-const int pinENB = 7;
+const int pinIN1 = 7;
+const int pinIN2 = 8;
+const int pinIN3 = 9;
+const int pinIN4 = 10;
+const int pinENB = 5;
 const int pinMotorDerecha[3] = { pinENA, pinIN1, pinIN2 }; // el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
 const int pinMotorIzquierda[3] = { pinENB, pinIN3, pinIN4 };// el primero es hacia adelante, el segundo hacia atras y el tercero la velocidad de giro
 const int speed = 130;      //velocidad de giro
@@ -21,7 +21,7 @@ const int echoPin = 2;
 // Servo
 Servo myservo;
 const int waitTime = 250;
-const int pinServo = 5;
+const int pinServo = 4;
 
 // Direcciones
 const int adelante = 8;
@@ -59,8 +59,8 @@ void setup()
 void loop(){
   myservo.write(90); // Pongo el servo mirando para el frente
   leerTecla(); // manejar desde conexión serial  
-  //leerEntrada();
-  //moverse(); //se mueve de forma automática        
+  leerEntrada();
+  moverse(); //se mueve de forma automática        
 }
  
 void moveForward(const int pinMotor[3]){
@@ -172,7 +172,7 @@ int medirFrente(){
 }
 
 int medirIzquierda(){
-       myservo.write(180);
+       myservo.write(140);
        delay(500);
        Serial.print ("Distancia Izquierda: "); // Output distance (unit: cm)
        int distancia = medir();       
@@ -180,7 +180,7 @@ int medirIzquierda(){
 }
 
 int medirDerecha(){
-       myservo.write(0);
+       myservo.write(40);
        delay(waitTime);
        Serial.print ("Distancia Derecha: "); // Output distance (unit: cm)
        int distancia = medir();       
@@ -195,17 +195,17 @@ int obtenerDireccion(){
         detenerse(1);
         retroceder(2);
        }   
-       if(distanciaFrente <25){
+       if(distanciaFrente < 35){
          detenerse(1);
          distanciaIzquierda = medirIzquierda();
          delay(delay_time);
          distanciaDerecha = medirDerecha();
          delay(delay_time);        
          if(distanciaIzquierda > distanciaDerecha){
-          direccion = derecha;
+          direccion = izquierda;
          }
          else{
-          direccion = izquierda;
+          direccion = derecha;
          }        
          if(distanciaIzquierda <10 && distanciaDerecha <10){
           direccion = atras;
@@ -232,7 +232,8 @@ void leerTecla(){
       case 0x00FF22DD: girarALaIzquierda(1);
                        Serial.println("Tecla: Izquierda");    
                        break;
-      case 0x00FF02FD: Serial.println("Tecla: OK");    
+      case 0x00FF02FD: detenerse(2);
+                       Serial.println("Tecla: OK");    
                        break;
       case 0x00FFC23D: girarALaDerecha(1);
                        Serial.println("Tecla: Derecha");   
@@ -265,7 +266,7 @@ void leerTecla(){
                        break;
       case 0x00FF42BD: Serial.println("Tecla: *");    
                        break;
-      case 0x00FF4AB5: detenerse(2);
+      case 0x00FF4AB5: 
                        Serial.println("Tecla: 0");    
                        break;
       case 0x00FF52AD: Serial.println("Tecla: #");    
