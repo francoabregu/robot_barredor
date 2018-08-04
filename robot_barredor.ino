@@ -36,7 +36,10 @@ IRrecv irrecv(RECV_PIN);
 decode_results results;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-
+// modos
+const int manual = 1;
+const int automatico = 2;
+int modo = 0;
 
 void setup()
 {
@@ -59,11 +62,22 @@ void setup()
 
 
 void loop(){
+  //Serial.print("Modo: ");
+  //Serial.print(modo);
+  leerTecla();
+  leerEntrada();
   myservo.write(90); // Pongo el servo mirando para el frente
   digitalWrite(pinMotorCepillo, HIGH);
-  leerTecla(); // manejar desde conexión serial  
-  leerEntrada();
-  moverse(); //se mueve de forma automática        
+  switch(modo){
+    case manual: leerTecla(); // manejar desde conexión serial  
+                 leerEntrada();
+                 break;
+    case automatico:  moverse(); //se mueve de forma automática        
+                      break;
+    default: break;
+  }
+  
+  
 }
  
 void moveForward(const int pinMotor[3]){
@@ -85,7 +99,7 @@ void fullStop(const int pinMotor[3]){
 }
 
 void avanzar(int valor){
-  imprimirEnLCD("Movimiento:","Avanzar");
+  imprimirEnLCD("Avanzar");
   digitalWrite(pinMotorDerecha[1], HIGH);
    digitalWrite(pinMotorDerecha[2], LOW);
    analogWrite(pinMotorDerecha[0], 120);
@@ -96,14 +110,14 @@ void avanzar(int valor){
 }
 
 void detenerse(int valor){
-  imprimirEnLCD("Movimiento:","Detenerse");
+  imprimirEnLCD("Detenerse");
   fullStop(pinMotorDerecha);
   fullStop(pinMotorIzquierda);
   delay(valor * 100);
 }
 
 void retroceder(int valor){
-  imprimirEnLCD("Movimiento:","Retroceder");
+  imprimirEnLCD("Retroceder");
   moveBackward(pinMotorDerecha);
   moveBackward(pinMotorIzquierda);
   delay(valor * 100);
@@ -132,7 +146,7 @@ void izquierdaUnaRueda(int valor){
 
 // con las dos ruedas
 void girarALaDerecha(int valor){
-      imprimirEnLCD("Movimiento:","Girar ->");
+      imprimirEnLCD("Girar ->");
       digitalWrite(pinMotorIzquierda[2], LOW); // cause the motor (right rear) to operate
       digitalWrite(pinMotorIzquierda[1], HIGH);
       digitalWrite(pinMotorDerecha[2], HIGH);
@@ -145,7 +159,7 @@ void girarALaDerecha(int valor){
 
 //con las dos ruedas
 void girarALaIzquierda(int valor){
-      imprimirEnLCD("Movimiento:","<- Girar ");
+      imprimirEnLCD("<- Girar ");
       digitalWrite(pinMotorIzquierda[2], HIGH);
       digitalWrite(pinMotorIzquierda[1], LOW); // cause the motor (right front) to operate
       digitalWrite(pinMotorDerecha[2], LOW); // cause the motor (left rear) to operate
@@ -166,7 +180,7 @@ int medir(){
     int distancia= duracion*0.034/2;
     Serial.print("Distancia: ");
     Serial.println(distancia);
-    imprimirEnLCD("Distancia:",(String) distancia);
+    imprimirEnLCD((String) distancia);
     return distancia;
 }
 
@@ -248,9 +262,13 @@ void leerTecla(){
       case 0x00FFA857: retroceder(2);
                        Serial.println("Tecla: Abajo"); 
                        break;
-      case 0x00FF6897: Serial.println("Tecla: 1");    
+      case 0x00FF6897: modo = manual;
+                       imprimirEnLCD("");
+                       Serial.println("Tecla: 1");    
                        break;
-      case 0x00FF9867: Serial.println("Tecla: 2");    
+      case 0x00FF9867: modo = automatico;
+                       imprimirEnLCD("");
+                       Serial.println("Tecla: 2");    
                        break;
       case 0x0FFB04F: Serial.println("Tecla: 3");    
                        break;
@@ -269,11 +287,18 @@ void leerTecla(){
       case 0x00FF38C7: medir();
                        Serial.println("Tecla: 8");    
                        break;
-      case 0x00FF5AA5: Serial.println("Tecla: 9");    
+      case 0x00FF5AA5: digitalWrite(pinMotorCepillo, HIGH);
+                       imprimirEnLCD("Mover Cepillo");
+                       delay(200);
+                       digitalWrite(pinMotorCepillo,LOW);
+                       Serial.println("Tecla: 9");
+                       Serial.println("Mover cepillo");    
                        break;
       case 0x00FF42BD: Serial.println("Tecla: *");    
                        break;
-      case 0x00FF4AB5: 
+      case 0x00FF4AB5: modo = 0;
+                       imprimirEnLCD("");
+                       Serial.print("Seleccionar modo");
                        Serial.println("Tecla: 0");    
                        break;
       case 0x00FF52AD: Serial.println("Tecla: #");    
@@ -314,13 +339,31 @@ void leerEntrada(){
       Serial.print("Girar a la derecha\n");
       girarALaDerecha(6);
      }
+     if(opcion == "manual"){
+      Serial.print("Modo manual\n");
+      modo = 1;
+      imprimirEnLCD("");
+     }
+     if(opcion == "automatico"){
+      Serial.print("Modo automatico\n");
+      modo = 2;
+      imprimirEnLCD("");
+     }
+     
      if(opcion == "retroceder"){
       Serial.print("Retroceder\n");
       retroceder(3);
      }
-     if(opcion == "parar"){
-      Serial.print("Parar\n");
+     if(opcion == "detenerse"){
+      Serial.print("Detenerse\n");
       detenerse(2);
+     }
+     if(opcion == "girarCepillo"){
+      Serial.print("Girar Cepillo\n");
+      imprimirEnLCD("Girar cepillo");
+      digitalWrite(pinMotorCepillo,HIGH);
+      delay(200);
+      digitalWrite(pinMotorCepillo,LOW);
      }   
   }
 }
@@ -351,10 +394,17 @@ void moverse(){
   }
 }
 
-void imprimirEnLCD(String linea1, String linea2){
+void imprimirEnLCD(String linea2){
    lcd.clear();
    lcd.setCursor(0, 0);
-   lcd.print(linea1);
+   switch(modo){
+    case automatico: lcd.print("Modo Automatico");
+                     break;
+    case manual: lcd.print("Modo Manual");
+                 break;
+    default: lcd.print("Seleccionar Modo");
+             break;
+   }
    lcd.setCursor(0, 1);
    lcd.print(linea2);   
 }
