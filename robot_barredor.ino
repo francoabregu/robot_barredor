@@ -17,6 +17,7 @@ const int speed = 130;      //velocidad de giro
 int distance;
 const int trigPin = 3;
 const int echoPin = 2;
+const int pinMotorCepillo = 12;
 
 // Servo
 Servo myservo;
@@ -47,6 +48,7 @@ void setup()
    pinMode(pinIN3, OUTPUT);
    pinMode(pinIN4, OUTPUT);
    pinMode(pinENB, OUTPUT);
+   pinMode(pinMotorCepillo, OUTPUT);
    Serial.begin(9600);
    myservo.attach(pinServo); // Define the servo motor output pin 5 (PWM)
    irrecv.enableIRIn();
@@ -58,6 +60,7 @@ void setup()
 
 void loop(){
   myservo.write(90); // Pongo el servo mirando para el frente
+  digitalWrite(pinMotorCepillo, HIGH);
   leerTecla(); // manejar desde conexión serial  
   leerEntrada();
   moverse(); //se mueve de forma automática        
@@ -83,8 +86,12 @@ void fullStop(const int pinMotor[3]){
 
 void avanzar(int valor){
   imprimirEnLCD("Movimiento:","Avanzar");
-  moveForward(pinMotorDerecha);
+  digitalWrite(pinMotorDerecha[1], HIGH);
+   digitalWrite(pinMotorDerecha[2], LOW);
+   analogWrite(pinMotorDerecha[0], 120);
+  //moveForward(pinMotorDerecha);
   moveForward(pinMotorIzquierda);
+  
   delay(valor * 100);
 }
 
